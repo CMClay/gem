@@ -1,5 +1,4 @@
 require "retsly/version"
-require "swagger"
 # require_relative "retsly/swagger"
 require_relative "retsly/api"
 
