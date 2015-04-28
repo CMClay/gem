@@ -3,35 +3,45 @@ require "net/http"
 require "uri"
 
 require 'httparty'
+require_relative './resource'
 
 module Retsly
   class Api
-    attr_reader :schema, :url, :endpoints, :resources, :token
-    def initialize(vendor='test', token='43147991398c29d166dd70152caa3600')
+    attr_reader :schema, :url, :endpoints, :resources
+    attr_accessor :vendor, :token
+    def initialize(vendor='test', token='5OylUxE1Z3T8u3Fbcy8LLUJeao5IidzW')
       path = Dir.pwd + '/lib/retsly/swagger.json'
       @schema = Swagger.load(path);
       @url = 'https://' + @schema.host + @schema.basePath
       @token = token
       @vendor = vendor
-      create_methods
-      
-      create_attr('booya')
-      self.booya = 'booooooya'
+
+      create_methods()
+      get_resources()
+      get_endpoints()
     end
 
-    def endpoints
+    def get_endpoints
+      @endpoints = []
+      @schema.operations.each do | operation |
+        @endpoints.push operation.signature
+      end
     end
 
-    # def get_resources
-    #   paths = @schema.
-    # end
-
-    # private
-
-    def get()
-      puts @url
-      response = HTTParty.get("https://dev.rets.io/api/v1/listing/test?access_token=#{@token}", :verify => false)
-      puts response.body
+    def get_resources
+      @resources = []
+      @schema.operations.each do | operation |
+        operation.path.split('/').each do |seg|
+          @resources.push seg
+        end
+      end
+      @resources.select! { |r| r[0] != '{' && !r.empty?}
+      @resources.uniq!
+      @resources.each do |r|
+        create_attr(r)
+        # self.instance_variable_set("@#{r}", 'testinggg')
+        self.instance_variable_set("@#{r}", Resource.new(r, @url, @token, @vendor))
+      end
     end
 
     def create_methods

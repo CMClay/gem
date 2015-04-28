@@ -30,4 +30,5 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "swagger-core"
   spec.add_runtime_dependency "httparty"
+  spec.add_runtime_dependency "json"
 end
